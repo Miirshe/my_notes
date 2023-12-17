@@ -1,11 +1,28 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:my_notes/models/Notes.dart';
 import 'package:my_notes/widgets/NoteCard.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  Future<List<Notes>> getNotes() async {
+    final noteRef = firestore.collection('notes');
+    final data = await noteRef.get();
+    List<Notes> notes = [];
+    return data.docs.map((e) => Notes.fromJson(e.data())).toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    getNotes();
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -39,10 +56,21 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: ListView.builder(itemBuilder: (context , index){
-              return NoteCard();
-            })
-          )
+              child: FutureBuilder<List<Notes>>(
+                  future: getNotes(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    } else {
+                      return ListView.builder(
+                          itemCount: 5,
+                          itemBuilder: (context, index) {
+                            return NoteCard();
+                          });
+                    }
+                  }))
         ],
       ),
     );
