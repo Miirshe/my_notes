@@ -64,10 +64,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: CircularProgressIndicator(),
                       );
                     } else {
+                      final notes = snapshot.data!;
                       return ListView.builder(
-                          itemCount: 5,
+                          itemCount: notes.length,
                           itemBuilder: (context, index) {
-                            return NoteCard();
+                            return NoteCard(notes: notes[index],);
                           });
                     }
                   }))
